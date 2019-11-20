@@ -29,16 +29,16 @@ event AppendEntriesResponse: (Term: int, Success: bool, Server: machine, Receive
 event BecomeFollower;
 event BecomeCandidate;
 event BecomeLeader;
-event EConfigureEvent: machine;
-event EStartTimer;
-event ECancelTimer;
-event ETimeout;
-event ETickEvent;
-event PConfigureEvent: machine;
-event PStartTimer;
-event PCancelTimer;
-event PTimeout;
-event PTickEvent;
+//event EConfigureEvent: machine;
+//event EStartTimer;
+//event ECancelTimer;
+// event ETimeout;
+// event ETickEvent;
+// event PConfigureEvent: machine;
+// event PStartTimer;
+// event PCancelTimer;
+// event PTimeout;
+// event PTickEvent;
 
 event EMonitorInit;
 

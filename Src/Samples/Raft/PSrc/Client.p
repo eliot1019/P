@@ -76,7 +76,7 @@ machine Client
 
     fun ProcessResponse()
     {
-        print "In ProcessResponse of Client";
+        print "In ProcessResponse of Client. Current counter {0}", Counter;
         if (Counter == 3)
         {
 

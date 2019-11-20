@@ -19,7 +19,6 @@ machine Server
     var Servers: seq[machine];
     var LeaderId: machine;
     var ElectionTimer: machine;
-    var PeriodicTimer: machine;
     var CurrentTerm: int;
     var VotedFor: machine;
     var Logs: seq[Log];
@@ -54,11 +53,7 @@ machine Server
             Servers = payload.Servers;
             ClusterManager = payload.ClusterManager;
 
-            ElectionTimer = new ElectionTimer();
-            send ElectionTimer, EConfigureEvent, this;
-
-            PeriodicTimer = new PeriodicTimer();
-            send PeriodicTimer, PConfigureEvent, this;
+            ElectionTimer = CreateTimer(this);
 
             raise BecomeFollower;
         }
@@ -74,7 +69,8 @@ machine Server
             LeaderId = default(machine);
             VotesReceived = 0;
 
-            send ElectionTimer, EStartTimer;
+            StartTimer(ElectionTimer, 100);
+            //send ElectionTimer, EStartTimer;
         }
 
         on Request do (payload: (Client: machine, Command: int)) {
@@ -130,7 +126,7 @@ machine Server
                 VotedFor = default(machine);
             }
         }
-        on ETimeout do {
+        on TIMEOUT do {
             raise BecomeCandidate;
         }
         on ShutDown do { 
@@ -138,7 +134,6 @@ machine Server
         }
         on BecomeFollower goto Follower;
         on BecomeCandidate goto Candidate;
-        ignore PTimeout;
     }
 
 
@@ -150,7 +145,8 @@ machine Server
             VotedFor = this;
             VotesReceived = 1;
 
-            send ElectionTimer, EStartTimer;
+            //send ElectionTimer, EStartTimer;
+            StartTimer(ElectionTimer, 100);
 
             //Logger.WriteLine("\n [Candidate] " + this.ServerId + " | term " + this.CurrentTerm + " | election votes " + this.VotesReceived + " | log " + this.Logs.Count + "\n");
             print "\n [Candidate] {0} on Entry | Term {1} | Votes Received {2} | Log # entries: {3}\n", this, CurrentTerm, VotesReceived, sizeof(Logs); 
@@ -207,6 +203,7 @@ machine Server
                     //    " | election votes " + this.VotesReceived + " | log " + this.Logs.Count + "\n");
                     print "\n [Leader] {0} | term {1} | election votes {2} | log {3}\n", this, CurrentTerm, VotesReceived, sizeof(Logs); 
                     VotesReceived = 0;
+                    CancelTimer(ElectionTimer);
                     raise BecomeLeader;
                 }
             }
@@ -230,10 +227,10 @@ machine Server
             print "[Candidate | AppendEntriesResponse] Server {0}", this;
             RespondAppendEntriesAsCandidate(request);
         }
-        on ETimeout do {
+        on TIMEOUT do {
+            print "\nETimeout for {0} which is already in Candidate state", this;
             raise BecomeCandidate;
         }
-        on PTimeout do BroadcastVoteRequests;
         on ShutDown do ShuttingDown;
         on BecomeLeader goto Leader;
         on BecomeFollower goto Follower;
@@ -247,7 +244,6 @@ machine Server
         var lastLogIndex: int;
         var lastLogTerm: int; 
 
-        send PeriodicTimer, PStartTimer;
         idx = 0;
         while (idx < sizeof(Servers)) {
            if (idx == ServerId) {
@@ -338,7 +334,7 @@ machine Server
         }
         on ShutDown do ShuttingDown;
         on BecomeFollower goto Follower;
-        ignore ETimeout, PTimeout;
+        ignore TIMEOUT;
     }
 
     fun ProcessClientRequest(trigger: (Client: machine, Command: int))
@@ -649,7 +645,6 @@ machine Server
     fun ShuttingDown()
     {
         send ElectionTimer, halt;
-        send PeriodicTimer, halt;
 
         raise halt;
     }
