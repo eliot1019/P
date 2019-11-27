@@ -47,8 +47,8 @@ machine Client
             LatestCommand = ChooseVal();
             Counter = Counter + 1;
             //Logger.WriteLine("\n [Client] new request " + this.LatestCommand + "\n");
-            print "\n\n\n[Client] new request {0}\n", LatestCommand;
-            send Cluster, Request, (Client=this, Command=LatestCommand);
+            print "\n\n\n[Client] new put request {0}\n", LatestCommand;
+            send Cluster, PutRequest, (Client=this, Command=LatestCommand);
         }    
 
         on Response do {

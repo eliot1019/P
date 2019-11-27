@@ -14,7 +14,7 @@
 // #region events
 
 event NotifyLeaderUpdate: (Leader: machine, Term: int);
-event Request: (Client: machine, Command: int);
+event PutRequest: (Client: machine, Command: int);
 event RedirectRequest: (Client: machine, Command: int);
 event ShutDown;
 event LocalEvent;

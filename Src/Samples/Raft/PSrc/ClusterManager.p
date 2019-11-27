@@ -67,7 +67,7 @@ machine ClusterManager
 		}
 		on ShutDown do ShuttingDown;
 		on LocalEvent goto Available;
-		defer Request;
+		defer PutRequest;
 	}
 
 	fun UpdateLeader(request: (Leader: machine, Term: int))
@@ -94,12 +94,12 @@ machine ClusterManager
 
 	state Available
 	{
-		on Request do (payload: (Client: machine, Command: int)){
-			print "[ClusterManager] Request {0} sent from client {1}", payload.Command, payload.Client;
-			send Leader, Request, (Client=payload.Client, Command=payload.Command);
+		on PutRequest do (payload: (Client: machine, Command: int)){
+			print "[ClusterManager] PutRequest {0} sent from client {1}", payload.Command, payload.Client;
+			send Leader, PutRequest, (Client=payload.Client, Command=payload.Command);
 		}
 		on RedirectRequest do (payload : (Client: machine, Command: int)){
-			send this, Request, payload;
+			send this, PutRequest, payload;
 			raise LocalEvent;
 		}
 		on NotifyLeaderUpdate do (payload: (Leader: machine, Term: int)){

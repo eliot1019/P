@@ -82,15 +82,15 @@ machine Server
             // send ElectionTimer, EStartTimer;
         }
 
-        on Request do (payload: (Client: machine, Command: int)) {
+        on PutRequest do (payload: (Client: machine, Command: int)) {
             if (LeaderId != null)
             {
-                print "[Follower | Request] {0} sends request to Leader {1}", this, LeaderId;
-                send LeaderId, Request, payload.Client, payload.Command;
+                print "[Follower | PutRequest] {0} sends put request to Leader {1}", this, LeaderId;
+                send LeaderId, PutRequest, payload.Client, payload.Command;
             }
             else
             {
-                print "[Follower | Request] {0} no Leader, redirect to ClusterManager.", this;
+                print "[Follower | PutRequest] {0} no Leader, redirect to ClusterManager.", this;
                 send ClusterManager, RedirectRequest, payload;
             }
         }
@@ -163,15 +163,15 @@ machine Server
             BroadcastVoteRequests();
         }
 
-        on Request do (payload: (Client: machine, Command: int)) {
+        on PutRequest do (payload: (Client: machine, Command: int)) {
             if (LeaderId != null)
             {
-                print "[Candidate | Request] {0} sends request to Leader {1}", this, LeaderId;
-                send LeaderId, Request, payload.Client, payload.Command;
+                print "[Candidate | PutRequest] {0} sends put request to Leader {1}", this, LeaderId;
+                send LeaderId, PutRequest, payload.Client, payload.Command;
             }
             else
             {
-                print "[Candidate | Request] {0} no leader, redirect to ClusterManager", this;
+                print "[Candidate | PutRequest] {0} no leader, redirect to ClusterManager", this;
                 send ClusterManager, RedirectRequest, payload;
             }
         }
@@ -325,7 +325,7 @@ machine Server
             }
         }
 
-        on Request do (request: (Client: machine, Command: int)) {
+        on PutRequest do (request: (Client: machine, Command: int)) {
             ProcessClientRequest(request);
         }
         on VoteRequest do (request: (Term: int, CandidateId: machine, LastLogIndex: int, LastLogTerm: int)) {
@@ -350,18 +350,18 @@ machine Server
     {
         var log: Log;
         var print_idx: int;
-        print "[Leader | Request] Leader {0} processing Client {1}", this, trigger.Client;
+        print "[Leader | PutRequest] Leader {0} processing Client {1}", this, trigger.Client;
         LastClientRequest = trigger;
         log = default(Log);
         log.Term = CurrentTerm;
         log.Command = LastClientRequest.Command;
-        print "[Leader | Request] Log Term: {0}, Log Command: {1}, idx: {2}", log.Term, log.Command, i;
+        print "[Leader | PutRequest] Log Term: {0}, Log Command: {1}, idx: {2}", log.Term, log.Command, i;
         Logs += (i, log);
-        print "[Leader | Request] Num entries: {0}, i: {1}", sizeof(Logs), i;
+        print "[Leader | PutRequest] Num entries: {0}, i: {1}", sizeof(Logs), i;
         i = i + 1;
         print_idx = 0;
         while (print_idx < i){
-            print "[Leader | Request] Log element {0}: {1}", print_idx, Logs[print_idx];
+            print "[Leader | PutRequest] Log element {0}: {1}", print_idx, Logs[print_idx];
             print_idx = print_idx + 1;
         }
 
@@ -649,7 +649,7 @@ machine Server
     {
         if (LastClientRequest != null)
         {
-            send ClusterManager, Request, (Client=LastClientRequest.Client, Command=LastClientRequest.Command);
+            send ClusterManager, PutRequest, (Client=LastClientRequest.Client, Command=LastClientRequest.Command);
         }
     }
 
